@@ -1,31 +1,21 @@
-import {
-  Grid,
-  Card,
-  CardBody,
-  Box,
-  CardHeader,
-  Heading,
-  Stack,
-  StackDivider,
-} from "@chakra-ui/react";
+import { Grid } from "@chakra-ui/react";
 import { KeepKeySdk } from "@keepkey/keepkey-sdk";
 import React, { useEffect } from "react";
 
 const Pubkeys = () => {
-  const [pubkeys, setPubkeys] = React.useState([]);
+  const [pubkeys, setPubkeys] = React.useState("");
+  const [url, setURL] = React.useState("");
 
   const onStart = async function () {
     try {
-      const spec = "http://localhost:1646/spec/swagger.json";
       const apiKey = localStorage.getItem("apiKey") || "1234";
       const config = {
         apiKey,
         pairingInfo: {
-          name: "KeepKey-template Demo App",
+          name: "onramper-dapp",
           imageUrl:
-            "https://github.com/BitHighlander/keepkey-desktop/raw/master/electron/icon.png",
-          basePath: spec,
-          url: "http://localhost:1646",
+            "https://image.pitchbook.com/jCSqZpD1au0fiH5lByEa93GWnhz1627378102738_200x200",
+          url: "https://onramper-dapp.vercel.app/",
         },
       };
       // init
@@ -36,90 +26,51 @@ const Pubkeys = () => {
       // eslint-disable-next-line no-console
       console.log("apiKey: ", config.apiKey);
 
+      // get ETH address
       // Unsigned TX
-      const paths = [
-        {
-          symbol: "BTC",
-          address_n: [2147483732, 2147483648, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "ETH",
-          address_n: [2147483692, 2147483708, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "RUNE",
-          address_n: [2147483692, 2147484579, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "ATOM",
-          address_n: [2147483692, 2147483766, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "OSMO",
-          address_n: [2147483692, 2147483766, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "BNB",
-          address_n: [2147483692, 2147484362, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "BCH",
-          address_n: [2147483692, 2147483793, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "LTC",
-          address_n: [2147483692, 2147483650, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-        {
-          symbol: "DOGE",
-          address_n: [2147483692, 2147483651, 2147483648],
-          coin: "Bitcoin",
-          script_type: "p2pkh",
-          showDisplay: false,
-        },
-      ];
-      const pubkeysQuery = [];
-      // eslint-disable-next-line no-plusplus
-      for (let i = 0; i < paths.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line no-await-in-loop
-        const pubkey = await sdk.system.info.getPublicKey(paths[i]);
-        // eslint-disable-next-line no-console
-        console.log(pubkey);
-        const pubkeyInfo: any = paths[i];
-        pubkeyInfo.xpub = pubkey.xpub;
-        pubkeysQuery.push(pubkeyInfo);
-      }
+      const addressInfoEth = {
+        addressNList: [2147483692, 2147483708, 2147483648, 0, 0],
+        coin: "Ethereum",
+        scriptType: "ethereum",
+        showDisplay: false,
+      };
+
+      // push tx to api
+      // console.log(kk.instance.SignTransaction())
+      const responseEth = await sdk.address.ethereumGetAddress({
+        address_n: addressInfoEth.addressNList,
+      });
       // eslint-disable-next-line no-console
-      console.log(pubkeysQuery);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      setPubkeys(pubkeysQuery);
+      console.log("responseEth: ", responseEth);
+
+      // get BTC address
+      // Unsigned TX
+      const addressInfo = {
+        addressNList: [2147483732, 2147483648, 2147483648, 0, 0],
+        coin: "Bitcoin",
+        scriptType: "p2wpkh",
+        showDisplay: false,
+      };
+
+      const responseBtc = await sdk.address.utxoGetAddress({
+        address_n: addressInfo.addressNList,
+        script_type: addressInfo.scriptType,
+        coin: addressInfo.coin,
+      });
+      // eslint-disable-next-line no-console
+      console.log("responseBtc: ", responseBtc);
+
+      // get LTC address
+
+      // get OSMO address
+      const pubkeysNew =
+        `ETH:${responseEth.address},` + `BTC:${responseBtc.address}`;
+      const urlOnramper = `https://buy.onramper.com?apiKey=pk_prod_OQ4CJ7wEyjVocOy3ibd45TUceLIlZHQlpugRV86g6SY0&wallets=${pubkeysNew}`;
+      // eslint-disable-next-line no-console
+      console.log("urlOnramper: ", urlOnramper);
+      setURL(urlOnramper);
+      // get COSMO address
+      setPubkeys(pubkeysNew);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
@@ -133,48 +84,13 @@ const Pubkeys = () => {
 
   return (
     <Grid textAlign="center" gap={2}>
-      {pubkeys.map((pubkey: any) => (
-        <Card>
-          <CardHeader>
-            <Heading size="md">Extended Public Key Info</Heading>
-          </CardHeader>
-
-          <CardBody>
-            <Stack divider={<StackDivider />} spacing="4">
-              <Box>
-                <Heading size="xs" textTransform="uppercase">
-                  Symbol
-                </Heading>
-                {pubkey.symbol}
-              </Box>
-              <Box>
-                <Heading size="xs" textTransform="uppercase">
-                  Address_n
-                </Heading>
-                {pubkey.address_n.toString()}
-              </Box>
-              <Box>
-                <Heading size="xs" textTransform="uppercase">
-                  Coin
-                </Heading>
-                {pubkey.coin}
-              </Box>
-              <Box>
-                <Heading size="xs" textTransform="uppercase">
-                  Script Type
-                </Heading>
-                {pubkey.script_type}
-              </Box>
-              <Box>
-                <Heading size="xs" textTransform="uppercase">
-                  Xpub
-                </Heading>
-                {pubkey.xpub}
-              </Box>
-            </Stack>
-          </CardBody>
-        </Card>
-      ))}
+      <iframe
+        src={url}
+        height="540px"
+        width="360px"
+        title="Onramper widget"
+        allow="accelerometer; autoplay; camera; gyroscope; payment"
+      />
     </Grid>
   );
 };
