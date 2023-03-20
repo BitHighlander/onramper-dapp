@@ -64,8 +64,10 @@ const Pubkeys = () => {
 
       // get OSMO address
       const pubkeysNew =
+        // eslint-disable-next-line no-useless-concat
         `ETH:${responseEth.address},` + `BTC:${responseBtc.address}`;
-      const urlOnramper = `https://buy.onramper.com?apiKey=pk_prod_OQ4CJ7wEyjVocOy3ibd45TUceLIlZHQlpugRV86g6SY0&wallets=${pubkeysNew}`;
+      const SS_KEY = "pk_prod_ViOib9FcqKQeqqBsLF6ZPYis8X0Wdl9ma16rBhTxXmw0";
+      const urlOnramper = `https://buy.onramper.com?apiKey=${SS_KEY}&wallets=${pubkeysNew}`;
       // eslint-disable-next-line no-console
       console.log("urlOnramper: ", urlOnramper);
       setURL(urlOnramper);
